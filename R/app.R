@@ -653,12 +653,16 @@ server <- function(input, output, session) {
   # downloadLogdata
   output$downloadLogdata <- downloadHandler(
     filename = function() {
+      fn <- genFileName(projname = config$projname, eventname = "logdata", courseid = as.integer(input$selectLogdataCourse))
       if(input$selectLogdataOutputFormat == "CSV"){
-        paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".csv", sep="")
+        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".csv", sep="")
+        paste0(fn, ".csv")
       } else if(input$selectLogdataOutputFormat == "Parquet"){
-        paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".parquet", sep="")
+        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".parquet", sep="")
+        paste0(fn, ".parquet")
       } else if(input$selectLogdataOutputFormat == "Feather"){
-        paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".feather", sep="")
+        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".feather", sep="")
+        paste0(fn, ".feather")
       }
     },
     content = function(file) {
@@ -784,13 +788,21 @@ server <- function(input, output, session) {
   # downloadLogdata
   output$downloadMFD <- downloadHandler(
     filename = function() {
-      if(input$selectOutputFormatMFD == "CSV"){
-        paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".csv", sep="")
-      } else if(input$selectOutputFormatMFD == "Parquet"){
-        paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".parquet", sep="")
-      } else if(input$selectOutputFormatMFD == "Feather"){
-        paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".feather", sep="")
+      fn <- genFileName(projname = config$projname, eventname = "forumdata", courseid = as.integer(input$selectLogdataCourse))
+      if(input$selectLogdataOutputFormat == "CSV"){
+        paste0(fn, ".csv")
+      } else if(input$selectLogdataOutputFormat == "Parquet"){
+        paste0(fn, ".parquet")
+      } else if(input$selectLogdataOutputFormat == "Feather"){
+        paste0(fn, ".feather")
       }
+      # if(input$selectOutputFormatMFD == "CSV"){
+      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".csv", sep="")
+      # } else if(input$selectOutputFormatMFD == "Parquet"){
+      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".parquet", sep="")
+      # } else if(input$selectOutputFormatMFD == "Feather"){
+      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".feather", sep="")
+      # }
     },
     content = function(file) {
       if(input$selectOutputFormatMFD == "CSV"){
@@ -845,8 +857,8 @@ server <- function(input, output, session) {
   # download userlist
   output$downloadData <- downloadHandler(
     filename = function() { 
-      #paste("dataset-gtcars-", Sys.Date(), ".csv", sep="")
-      paste(Sys.Date(),"_",config$projname,"_userlist_pseudonymized", ".csv", sep="")
+      fn <- genFileName(projname = config$projname, eventname = "userlist", courseid = as.integer(input$selectLogdataCourse))
+      paste0(fn, ".csv")
     },
     content = function(file) {
       write.csv(exportData(), file, row.names = FALSE, quote = FALSE)
@@ -1032,7 +1044,7 @@ server <- function(input, output, session) {
     filename = function() {
       dlExt <- tools::file_ext(importDataFilename)
       dlName <- tools::file_path_sans_ext(importDataFilename)
-      paste(dlName, "_pseudonymized", ".", dlExt, sep="")
+      paste0(dlName, "_anon", ".", dlExt)
     },
     content = function(file) {
       dlExt <- tools::file_ext(importDataFilename)
@@ -1157,7 +1169,7 @@ server <- function(input, output, session) {
     filename = function() {
       dlExt <- tools::file_ext(importDataFilename)
       dlName <- tools::file_path_sans_ext(importDataFilename)
-      paste(dlName, "_pseudonymized", ".", dlExt, sep="")
+      paste0(dlName, "_pseudonymized", ".", dlExt)
     },
     content = function(file) {
       dlExt <- tools::file_ext(importDataFilename)

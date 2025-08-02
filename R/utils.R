@@ -13,7 +13,7 @@ genPepper <- function(){
 # copied from: https://github.com/enricoschumann/password/blob/master/R/password.R
 #' Generate password
 #'
-#' Function shuffles the rows of a dataframe into a random order.
+#' Function generates passwords
 #'
 #' @param n integer: length of password
 #' @param numbers logical: include numbers from 0 to 9?
@@ -35,4 +35,32 @@ password <- function(n = 8, numbers = TRUE, case = TRUE,
   if (case) from <- c(from, LETTERS)
   res <- resample(from, n)
   paste(res, collapse = "")
+}
+
+#' Generate filename
+#'
+#' Function generates filename following rules: date_projname_eventname_courseid_anon
+#'
+#' @param projname character vector, project name
+#' @param eventname character vector, event
+#' @param courseid integer
+#'
+#' @return A character vector of length one.
+#' @noRd
+
+genFileName <- function(projname = "", eventname = "", courseid){
+  if(projname != ""){
+    projname <- paste0("_", projname)
+  }
+  if(eventname != ""){
+    eventname <- paste0("_", eventname)
+  }
+  
+  if(missing(courseid)){
+    courseid <- ""
+  } else {
+    courseid <- paste0("_", abs(courseid))
+  }
+  fn <- paste0(format(Sys.Date(), "%Y_%m_%d"), projname, eventname, courseid, "_anon")
+  gsub("\\s+", "", fn)
 }

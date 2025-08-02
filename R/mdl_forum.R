@@ -228,7 +228,7 @@ remove_names <- function(text, firstnames, lastnames){
   # build tokens
   text_tokens <- quanteda::tokens(text)
   # replace names
-  text_tokens <- quanteda::tokens_replace(text_tokens, names$names, names$pattern, case_insensitive = FALSE)
+  text_tokens <- quanteda::tokens_replace(text_tokens, names$names, names$pattern, case_insensitive = TRUE)
   # return text, see: https://stackoverflow.com/a/69494297
   text_tokens <- lapply(text_tokens, paste, collapse = " ")
   # reduce multiple occurances of <PERSON>
