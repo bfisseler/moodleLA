@@ -1,0 +1,39 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# moodleLA
+
+<!-- badges: start -->
+
+[![Repostatus: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
+[![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
+[![CRAN status](https://www.r-pkg.org/badges/version/moodleLA)](https://CRAN.R-project.org/package=moodleLA)
+<!-- badges: end -->
+
+The goal of moodleLA is to facilitate access to and manipulating of Moodle&trade; data for learning analytics practitioners. Moodle is a widely used open source learning management system (LMS). For more information about Moodle go to [www.moodle.org](https://moodle.org/). 
+
+## Credits
+
+This package is developed and maintained by Björn Fisseler from University of Hagen (FernUniversität in Hagen).
+
+## Installation
+
+To install the latest development version:
+
+```{r, eval=FALSE}
+devtools::install("bfisseler/moodleLA")
+```

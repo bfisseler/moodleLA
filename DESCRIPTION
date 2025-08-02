@@ -1,0 +1,53 @@
+Package: moodleLA
+Type: Package
+Title: Helper functions to facilitate learning analytics with Moodle data
+Version: 0.0.0.9000
+Authors@R: 
+    c(
+    person(given = "Björn",
+             family = "Fisseler",
+             role = c("aut", "cre"),
+             email = "bjoern.fisseler@gmail.com",
+             comment = c(ORCID = "0000-0002-8178-7479")),
+    person("FernUniversität in Hagen, Germany", role = c("cph"))
+             )
+Maintainer: Björn Fisseler <bjoern.fisseler@gmail.com>
+Description: A collection of functions to connect to a 'Moodle' database, cache relevant tables locally and generate learning analytics. 
+    'Moodle' is an open source Learning Management System (LMS) developed by MoodleHQ. For more information about Moodle, visit <https://moodle.org>.
+License: MIT + file LICENSE
+URL: https://github.com/bfisseler/moodleLA,
+    https://github.com/bfisseler/moodleLA/
+BugReports: https://github.com/bfisseler/moodleLA/issues
+Encoding: UTF-8
+Suggests: 
+    knitr,
+    roxygen2,
+    rmarkdown,
+    prettyunits,
+    lubridate,
+    testthat,
+    rlang
+Imports: 
+    dplyr,
+    utils,
+    stringr,
+    RMariaDB,
+    RPostgres,
+    RMySQL,
+    glue,
+    shinyjs,
+    shiny,
+    bslib,
+    shinyvalidate,
+    tm,
+    pool,
+    arrow,
+    stringr,
+    digest,
+    stats,
+    yaml,
+    haven,
+    openxlsx,
+    quanteda
+RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)

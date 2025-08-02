@@ -1,0 +1,13 @@
+inst/doc
+.Rbuildignore
+.Rhistory
+.RData
+.Rproj.user
+.Rproj
+moodleLA.Rproj
+/config.yml
+moodleLA.Rcheck/
+moodleLA*.tar.gz
+moodleLA*.tgz
+-BFMac.Rhistory
+-BFMac.RData
