@@ -12,4 +12,4 @@ dfLangCodes <- data.frame(
 
 listLangCodes <- setNames(as.list(dfLangCodes$code), dfLangCodes$language)
 
-usethis::use_data(dfLangCodes, internal = TRUE, overwrite = TRUE)
+usethis::use_data(dfLangCodes, listLangCodes, internal = TRUE, overwrite = TRUE)

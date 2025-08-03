@@ -6,9 +6,7 @@
 <!-- badges: start -->
 
 [![Repostatus:
-WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![Lifecycle:
-experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/moodleLA)](https://CRAN.R-project.org/package=moodleLA)
 [![R-CMD-check](https://github.com/bfisseler/moodleLA/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bfisseler/moodleLA/actions/workflows/R-CMD-check.yaml)

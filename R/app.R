@@ -318,6 +318,7 @@ server <- function(input, output, session) {
   iv_mfd <- shinyvalidate::InputValidator$new()
   iv_mfd$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
   iv_mfd$add_rule("selectOutputFormatMFD", shinyvalidate::sv_required())
+  iv_mfd$add_rule("selectForumsMFD", shinyvalidate::sv_required())
   iv_mfd$enable()
   
   # validator for Match & Pseudonymise Data
@@ -655,19 +656,16 @@ server <- function(input, output, session) {
     filename = function() {
       fn <- genFileName(projname = config$projname, eventname = "logdata", courseid = as.integer(input$selectLogdataCourse))
       if(input$selectLogdataOutputFormat == "CSV"){
-        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".csv", sep="")
         paste0(fn, ".csv")
       } else if(input$selectLogdataOutputFormat == "Parquet"){
-        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".parquet", sep="")
         paste0(fn, ".parquet")
       } else if(input$selectLogdataOutputFormat == "Feather"){
-        #paste(Sys.Date(),"_",config$projname,"_logdata_pseudonymized", ".feather", sep="")
         paste0(fn, ".feather")
       }
     },
     content = function(file) {
       if(input$selectLogdataOutputFormat == "CSV"){
-        utils::write.csv(exportData(), file, row.names = FALSE, quote = FALSE)
+        utils::write.csv(exportData(), file, row.names = FALSE, quote = TRUE)
       } else if(input$selectLogdataOutputFormat == "Parquet"){
         arrow::write_parquet(exportData(), file)
       } else if(input$selectLogdataOutputFormat == "Feather"){
@@ -716,22 +714,23 @@ server <- function(input, output, session) {
     cid <- as.integer(input$selectLogdataCourse) # courseid
     fid <- as.integer(input$selectForumsMFD) # forums id
     
+    if(length(fid) == 0){
+      showNotification('No forum data found.','', type = "warning")
+      shinyjs::runjs("$('#btnGetMFD').text('Get Moodle forum messages');")
+      return()
+    }
+    
     tryCatch({
       forumdata <- mdl_forumdata(dbpMdl, config$dbprefix, cid, fid)
-    }, warning = function(w) {
-      showNotification('Could not retrieve forum data.','',type = "error")
-      return()
     }, error = function(e) {
       showNotification('Could not retrieve forum.','',type = "error")
-      return()
-    }, finally = {
-      shinyjs::runjs("$('#btnGetLogdata').text('Get Moodle forum messages');")
+      return(NULL)
     })
     
     if(nrow(forumdata) == 0){
       showNotification('No forum data found.','', type = "warning")
-      shinyjs::runjs("$('#btnGetLogdata').text('Get Moodle forum messages');")
-      return()
+      shinyjs::runjs("$('#btnGetMFD').text('Get Moodle forum messages');")
+      return(NULL)
     }
     
     # convert to text
@@ -743,14 +742,10 @@ server <- function(input, output, session) {
       shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Removing usernames...');")
       tryCatch({
         user <- mdl_userlist(dbpMdl, config$dbprefix, cid)
-      }, warning = function(w) {
-        showNotification('Could not retrieve user list.','',type = "error")
-        return()
       }, error = function(e) {
         showNotification('Could not retrieve user list.','',type = "error")
-        return()
-      }, finally = {
         shinyjs::runjs("$('#btnGetLogdata').text('Get Moodle forum messages');")
+        return(NULL)
       })
       
       firstnames <- unlist(strsplit(user$firstname, " +"))
@@ -804,7 +799,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       if(input$selectOutputFormatMFD == "CSV"){
-        utils::write.csv(exportData(), file, row.names = FALSE)
+        utils::write.csv(exportData(), file, row.names = FALSE, quote = TRUE)
       } else if(input$selectOutputFormatMFD == "Parquet"){
         arrow::write_parquet(exportData(), file)
       } else if(input$selectOutputFormatMFD == "Feather"){
@@ -859,7 +854,7 @@ server <- function(input, output, session) {
       paste0(fn, ".csv")
     },
     content = function(file) {
-      write.csv(exportData(), file, row.names = FALSE, quote = FALSE)
+      utils::write.csv(exportData(), file, row.names = FALSE, quote = TRUE)
     })
   
   # course selector logic
@@ -1047,7 +1042,7 @@ server <- function(input, output, session) {
     content = function(file) {
       dlExt <- tools::file_ext(importDataFilename)
       if(tolower(dlExt) == "csv" ){
-        utils::write.csv(exportData(), file, row.names = FALSE, quote = FALSE)
+        utils::write.csv(exportData(), file, row.names = FALSE, quote = TRUE)
       } else if(tolower(dlExt) == "sav"){
         haven::write_sav(exportData(), file, compress = "zsav")
       } else if(tolower(dlExt) == "xlsx"){
@@ -1167,12 +1162,12 @@ server <- function(input, output, session) {
     filename = function() {
       dlExt <- tools::file_ext(importDataFilename)
       dlName <- tools::file_path_sans_ext(importDataFilename)
-      paste0(dlName, "_pseudonymized", ".", dlExt)
+      paste0(dlName, "_anon", ".", dlExt)
     },
     content = function(file) {
       dlExt <- tools::file_ext(importDataFilename)
       if(tolower(dlExt) == "csv" ){
-        utils::write.csv(exportData(), file, row.names = FALSE, quote = FALSE)
+        utils::write.csv(exportData(), file, row.names = FALSE, quote = TRUE)
       } else if(tolower(dlExt) == "sav"){
         haven::write_sav(exportData(), file, compress = "zsav")
       } else if(tolower(dlExt) == "xlsx"){

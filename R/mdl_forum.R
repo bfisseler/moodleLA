@@ -32,6 +32,7 @@ mdl_forumdata <- function(dbp, prefix, courseid, forumids){
 #' @export
 
 mdl_forumdata_query <- function(prefix, courseid, forumids) {
+  forumids <- paste(forumids, collapse = ', ') # as glue_safe does not eval R, we have to do it first
   glue::glue_safe("WITH 
     -- select all students enrolled in the course
     userlist AS (
@@ -73,7 +74,7 @@ mdl_forumdata_query <- function(prefix, courseid, forumids) {
         WHERE
             course = {courseid} AND
             userid IN (SELECT userid FROM userlist) AND
-            forum IN ({paste(forumids, collapse = ', ')})
+            forum IN ({forumids})
     ),
     forumposts AS(
     SELECT 

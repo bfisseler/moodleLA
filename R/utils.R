@@ -59,8 +59,8 @@ genFileName <- function(projname = "", eventname = "", courseid){
   if(missing(courseid)){
     courseid <- ""
   } else {
-    courseid <- paste0("_", abs(courseid))
+    courseid <- paste0("_CourseID_", abs(courseid))
   }
-  fn <- paste0(format(Sys.Date(), "%Y_%m_%d"), projname, eventname, courseid, "_anon")
+  fn <- paste0(format(Sys.Date(), "%Y_%m_%d"), projname, courseid, eventname, "_anon")
   gsub("\\s+", "", fn)
 }
