@@ -130,12 +130,12 @@ ui <- bslib::page_navbar(
               ),
               fillable = FALSE, fill = FALSE
             ),
-            p("Microsoft Presidio, running in Docker, can be used to remove personal data. You must specify the host address and ports for the analyzer and anonymizer."),
+            p("Microsoft Presidio, running in Docker locally or remote, can be used to remove personal data. You must specify the host address and port for both analyzer and anonymizer."),
             bslib::layout_columns(
-              shiny::textInput("presidioURL", "Docker host address", placeholder = "http://localhost"),
-              shiny::numericInput("presidioAnalyzerPort", "Analyzer Port", value = 5002, min = 1, max = 65535),
-              shiny::numericInput("presidioAnalyzerPort", "Anonymizer Port", value = 5001, min = 1, max = 65535),
-              fillable = FALSE, fill = FALSE, col_widths = c(6, 3, 3)
+              shiny::textInput("presidioAnalyzer", "Presidio Analyzer", value = "http://localhost:5002/analyze", placeholder = "http://localhost:5002/analyze"),
+              shiny::textInput("presidioAnonymizer", "Presidio Anonymizer", value = "http://localhost:5001/anonymize", placeholder = "http://localhost:5001/anonymize"),
+              shiny::selectInput("presidioLang", "Language", choices = listLangCodes, selected = "en"),
+              fillable = FALSE, fill = FALSE, col_widths = c(5, 5, 2)
             ),
             p("3. Select the preferred output file format."),
             bslib::layout_columns(
@@ -256,7 +256,7 @@ ui <- bslib::page_navbar(
     )
   )
   # end sidebar
-) 
+) # bslib::page_navbar(
 
 # Define server logic
 server <- function(input, output, session) {
@@ -755,8 +755,6 @@ server <- function(input, output, session) {
       
       firstnames <- unlist(strsplit(user$firstname, " +"))
       lastnames <- unlist(strsplit(user$lastname, " +"))
-      #names <- c(firstnames, lastnames)
-      #rm(user, firstnames, lastnames)
       forumdata$message <- stringr::str_replace_all(forumdata$message, "\"", "")
       #forumdata$message <- sapply(forumdata$message, remove_names, firstnames = firstnames, lastnames = lastnames)
       forumdata$message <- remove_names(forumdata$message, firstnames, lastnames)
@@ -770,6 +768,13 @@ server <- function(input, output, session) {
                                                remove_phonenumber = input$chkboxPhoneMFD,
                                                placeholder = input$chkboxReplaceMFD)
     # run Presidio here
+    if(input$chkboxPOSMFD){
+      shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymising text using Presidio...');")
+      forumdata$message <- presidio_pseudonymize_text(text = forumdata$message, 
+                                                      language = input$presidioLang,
+                                                      analyzer_url    = input$presidioAnalyzer,
+                                                      anonymizer_url  = input$presidioAnonymizer)
+    }
     
     # pseudonymze
     shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymising data...');")
@@ -796,13 +801,6 @@ server <- function(input, output, session) {
       } else if(input$selectLogdataOutputFormat == "Feather"){
         paste0(fn, ".feather")
       }
-      # if(input$selectOutputFormatMFD == "CSV"){
-      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".csv", sep="")
-      # } else if(input$selectOutputFormatMFD == "Parquet"){
-      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".parquet", sep="")
-      # } else if(input$selectOutputFormatMFD == "Feather"){
-      #   paste(Sys.Date(),"_",config$projname,"_forumdata_pseudonymized", ".feather", sep="")
-      # }
     },
     content = function(file) {
       if(input$selectOutputFormatMFD == "CSV"){

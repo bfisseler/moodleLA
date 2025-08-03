@@ -1,37 +1,35 @@
 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # moodleLA
 
 <!-- badges: start -->
-[![Repostatus: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
-[![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-
-[![CRAN status](https://www.r-pkg.org/badges/version/moodleLA)](https://CRAN.R-project.org/package=moodleLA)
+[![Repostatus:
+WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Lifecycle:
+experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/moodleLA)](https://CRAN.R-project.org/package=moodleLA)
+[![R-CMD-check](https://github.com/bfisseler/moodleLA/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bfisseler/moodleLA/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/bfisseler/moodleLA/graph/badge.svg)](https://app.codecov.io/gh/bfisseler/moodleLA)
 <!-- badges: end -->
 
-
-The goal of moodleLA is to facilitate access to and manipulating of Moodle&trade; data for learning analytics practitioners. Moodle is a widely used open source learning management system (LMS). For more information about Moodle go to [www.moodle.org](https://moodle.org/). 
-
-
-## Installation
-
-You can install the development version of moodleLA from [GitHub](https://github.com/) with:
-
-``` r
-# install.packages("pak")
-pak::pak("bfisseler/moodleLA")
-```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(moodleLA)
-## basic example code
-```
+The goal of moodleLA is to facilitate access to and manipulating of
+Moodle™ data for learning analytics practitioners. Moodle is a widely
+used open source learning management system (LMS). For more information
+about Moodle go to [www.moodle.org](https://moodle.org/).
 
 ## Credits
 
-This package is developed and maintained by Björn Fisseler from University of Hagen (FernUniversität in Hagen).
+This package is developed and maintained by Björn Fisseler from
+University of Hagen (FernUniversität in Hagen).
 
+## Installation
+
+To install the latest development version:
+
+``` r
+devtools::install("bfisseler/moodleLA")
+```

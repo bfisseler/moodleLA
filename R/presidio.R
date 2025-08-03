@@ -39,12 +39,6 @@ presidio_pseudonymize_text <- function(text,
   stopifnot(is.character(text))
   out <- vector("character", length(text))
   
-  # # small helper function for error handling
-  # is_in_loop <- function() {
-  #   return(FALSE)
-  # }
-  
-  
   for (i in seq_along(text)) {
     
     # check if text is empty
@@ -103,7 +97,6 @@ presidio_pseudonymize_text <- function(text,
 #' directly into Presidio *Anonymizer*.
 #' Works with a single string or a character vector.
 #'
-#' @param text Character vector with one or more texts.
 #' @param language Language code (e.g. `"en"`, `"de"`).
 #' @param analyzer_url Base URL of the Analyzer service *without* trailing slash.
 #'        Default `"http://localhost:5002"`.

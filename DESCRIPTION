@@ -48,7 +48,8 @@ Imports:
     yaml,
     haven,
     openxlsx,
-    quanteda
+    quanteda,
+    httr2
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Depends: 
