@@ -39,16 +39,19 @@ presidio_pseudonymize_text <- function(text,
   stopifnot(is.character(text))
   out <- vector("character", length(text))
   
-  # small helper function for error handling
-  is_in_loop <- function() {
-    return(FALSE)
-  }
+  # # small helper function for error handling
+  # is_in_loop <- function() {
+  #   return(FALSE)
+  # }
   
   
   for (i in seq_along(text)) {
     
     # check if text is empty
-    if(is.na(text[i]) | text[i] == ""){next}
+    if (is.na(text[i]) | text[i] == "") {
+      out[i] <- NA_character_
+      next
+    }
     
     analyze_req <- httr2::request(analyzer_url) |>
       httr2::req_body_json(list(
@@ -56,19 +59,18 @@ presidio_pseudonymize_text <- function(text,
         language = language
       ),  auto_unbox = TRUE)
     
-    tryCatch(
-      analyze_resp <- analyze_req |> httr2::req_perform() |>
+    analyze_resp <- tryCatch(
+      analyze_req |> httr2::req_perform() |>
         httr2::resp_body_json(),
       error = function(cnd) {
-        # code to run when error is thrown
         out[i] <- NA_character_
-        if(is_in_loop()){
-          next
-        } else{
-          return(out)
-        }
+        return(NULL)  # return NULL in case of error
       }
     )
+    
+    if (is.null(analyze_resp)) {
+      next  # analyzer call return error > next loop
+    }
     
     anonymizer_req <- httr2::request(anonymizer_url) |>
       httr2::req_body_json(list(
@@ -76,23 +78,22 @@ presidio_pseudonymize_text <- function(text,
         analyzer_results = analyze_resp
       ),  auto_unbox = TRUE)
     
-    tryCatch(
-      anonymizer_resp <- anonymizer_req |> httr2::req_perform() |>
+    anonymizer_resp <- tryCatch(
+      anonymizer_req |> httr2::req_perform() |>
         httr2::resp_body_json(),
       error = function(cnd) {
-        # code to run when error is thrown
         out[i] <- NA_character_
-        if(is_in_loop()){
-          next
-        } else{
-          return(out)
-        }
+        return(NULL)  # return NULL in case of error
       }
     )
     
-    out[i] <- anonymizer_resp$text
+    if (!is.null(anonymizer_resp)) {
+      out[i] <- anonymizer_resp$text
+    } else {
+      out[i] <- NA_character_  # Fehlerbehandlung für Anonymizer
+    }
   }
-  out
+  return(out)
 }
 
 #' Checks whether or not Microsoft Presidio supports the requested language
