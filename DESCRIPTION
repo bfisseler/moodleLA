@@ -51,3 +51,5 @@ Imports:
     quanteda
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 3.5)
