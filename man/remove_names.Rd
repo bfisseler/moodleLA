@@ -4,7 +4,7 @@
 \alias{remove_names}
 \title{Remove names from text}
 \usage{
-remove_names(text, firstnames, lastnames)
+remove_names(text, firstnames, lastnames, nicknames = TRUE, language)
 }
 \arguments{
 \item{text}{Either a single character/string or character vector from which to remove personal information}
@@ -12,6 +12,10 @@ remove_names(text, firstnames, lastnames)
 \item{firstnames}{lastnames A character vector of names, same length as lastnames}
 
 \item{lastnames}{A character vector of names, same length as firstnames}
+
+\item{nicknames}{Logical, indicating whether to remove nicknames as variations of given names}
+
+\item{language}{ISO langcode, indicating which list of nicknames to use; if not specified and nicknames is TRUE, a generic list is used}
 }
 \value{
 Text with names replaces with \if{html}{\out{<PERSON>}}

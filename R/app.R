@@ -752,7 +752,7 @@ server <- function(input, output, session) {
       lastnames <- unlist(strsplit(user$lastname, " +"))
       forumdata$message <- stringr::str_replace_all(forumdata$message, "\"", "")
       #forumdata$message <- sapply(forumdata$message, remove_names, firstnames = firstnames, lastnames = lastnames)
-      forumdata$message <- remove_names(forumdata$message, firstnames, lastnames)
+      forumdata$message <- remove_names(forumdata$message, firstnames, lastnames, nicknames = TRUE, language = input$presidioLang)
     }
     
     # pseudonymising text

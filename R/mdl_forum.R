@@ -216,15 +216,26 @@ pseudonymise_messages <- pseudonymize_messages
 #' @param text Either a single character/string or character vector from which to remove personal information
 #' @param firstnames lastnames A character vector of names, same length as lastnames
 #' @param lastnames A character vector of names, same length as firstnames
-#'
+#' @param nicknames Logical, indicating whether to remove nicknames as variations of given names
+#' @param language ISO langcode, indicating which list of nicknames to use; if not specified and nicknames is TRUE, a generic list is used
 #' @return Text with names replaces with <PERSON>
 #' 
 #' @importFrom quanteda tokens tokens_replace
 #' @export
 
-remove_names <- function(text, firstnames, lastnames){
+remove_names <- function(text, firstnames, lastnames, nicknames = TRUE, language){
   #we want to build this only onces
   names <- build_token_replace(firstnames, lastnames)
+  
+  # add language specific nicknames to list
+  if(nicknames){
+    nnames <- paste0("nicknames_", language)
+    if(exists(nnames)){
+      names <- rbind(names, nnames)
+    } else {
+      names <- rbind(names, nicknames)
+    }
+  }
   
   # build tokens
   text_tokens <- quanteda::tokens(text)
