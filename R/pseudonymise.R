@@ -1,6 +1,6 @@
 #' Shuffle a dataframe
 #'
-#' Function shuffles the rows of a dataframe into a random order.
+#' Function shuffles the rows of a data frame into a random order.
 #'
 #' @param df a dataframe
 #'
@@ -37,7 +37,8 @@ pseudonymize_matricle <- function(matricle, salt){
 
 #' @rdname pseudonymize_matricle
 #' @export
-pseudonymise_matricle <- pseudonymize_matricle
+
+pseudonymise_matricle <- function(...) moodleLA::pseudonymize_matricle(...)
 
 #' Pseudonymise data
 #'
@@ -61,4 +62,5 @@ pseudonymize <- function(input, salt){
 
 #' @rdname pseudonymize
 #' @export
-pseudonymise <- pseudonymize
+
+pseudonymise <- function(...) moodleLA::pseudonymize(...)
