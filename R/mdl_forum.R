@@ -218,7 +218,7 @@ pseudonymise_messages <- pseudonymize_messages
 #' @param lastnames A character vector of names, same length as firstnames
 #' @param nicknames Logical, indicating whether to remove nicknames as variations of given names
 #' @param language ISO langcode, indicating which list of nicknames to use; if not specified and nicknames is TRUE, a generic list is used
-#' @return Text with names replaces with <PERSON>
+#' @return Text with names replaced with <PERSON>
 #' 
 #' @importFrom quanteda tokens tokens_replace
 #' @export
