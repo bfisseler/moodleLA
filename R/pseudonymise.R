@@ -38,7 +38,7 @@ pseudonymize_matricle <- function(matricle, salt){
 #' @rdname pseudonymize_matricle
 #' @export
 
-pseudonymise_matricle <- function(...) moodleLA::pseudonymize_matricle(...)
+pseudonymise_matricle <- function(matricle, salt) moodleLA::pseudonymize_matricle(matricle, salt)
 
 #' Pseudonymise data
 #'
@@ -63,4 +63,4 @@ pseudonymize <- function(input, salt){
 #' @rdname pseudonymize
 #' @export
 
-pseudonymise <- function(...) moodleLA::pseudonymize(...)
+pseudonymise <- function(input, salt) moodleLA::pseudonymize(input, salt)

@@ -72,6 +72,7 @@ mdl_logdata_query <- function(prefix, courseid, startstamp, stopstamp) {
         log.component AS component,
         log.action AS action,
         log.target AS target,
+        log.objecttable AS objecttable,
         log.objectid AS objectid,
         log.crud AS crud,
         log.edulevel

@@ -18,7 +18,7 @@ remove_names(text, firstnames, lastnames, nicknames = TRUE, language)
 \item{language}{ISO langcode, indicating which list of nicknames to use; if not specified and nicknames is TRUE, a generic list is used}
 }
 \value{
-Text with names replaces with \if{html}{\out{<PERSON>}}
+Text with names replaced with \if{html}{\out{<PERSON>}}
 }
 \description{
 Function names from a text and replace it with \if{html}{\out{<PERSON>}}
