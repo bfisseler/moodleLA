@@ -21,13 +21,26 @@ about Moodle go to [www.moodle.org](https://moodle.org/).
 
 ## Credits
 
-This package is developed and maintained by Björn Fisseler from
-University of Hagen (FernUniversität in Hagen).
+This package is developed and maintained by [Dr. Björn
+Fisseler](https://www.fernuni-hagen.de/psychologie/fakultaet/dekanat/bjoern-fisseler.shtml)
+from University of Hagen (FernUniversität in Hagen).
 
 ## Installation
+
+Please note that the package is still under active development and has
+not yet been released. There is some initial documentation available,
+but more will be added by the end of 2025. So stay tuned and keep in
+touch!
 
 To install the latest development version:
 
 ``` r
 devtools::install("bfisseler/moodleLA")
 ```
+
+You will also need to install [Microsoft
+Presidio](https://github.com/microsoft/presidio) using Docker for
+additional detecting and filtering PII. You can (and should) customize
+Microsoft Presidio based on your needs and the language used. There will
+be more instructions on how to configure Microsoft Presidio for use with
+moodleLA at the end of 2025.
