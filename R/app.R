@@ -310,9 +310,9 @@ server <- function(input, output, session) {
   iv_ml$add_rule("dateRangeLogdata", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataWrangling", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataOutputFormat", shinyvalidate::sv_required())
-  iv_ml$add_rule("pepper", shinyvalidate::sv_required())
-  iv_ml$add_rule("pepper", shinyvalidate::sv_regex("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*]).{12,50}$", perl = TRUE, message = "Pepper should be 12 to 20 chars, containing upper and lower case letters, at least one number and one special character (#?!@$ %^&*)."))
-  iv_ml$enable()
+  # iv_ml$add_rule("pepper", shinyvalidate::sv_required())
+  # iv_ml$add_rule("pepper", shinyvalidate::sv_regex("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*]).{12,50}$", perl = TRUE, message = "Pepper should be 12 to 20 chars, containing upper and lower case letters, at least one number and one special character (#?!@$ %^&*)."))
+  # iv_ml$enable()
   
   # validator for Moodle forum data
   iv_mfd <- shinyvalidate::InputValidator$new()
@@ -638,6 +638,8 @@ server <- function(input, output, session) {
     logdata <- left_join(logdata, userlist |> dplyr::select(id, hashuser), by = c("userid" = "id"))
     colnames(userlist)[colnames(userlist) == "hashuser"] <- "relatedhashuser"
     logdata <- left_join(logdata, userlist |> dplyr::select(id, relatedhashuser), by = c("relateduserid" = "id"))
+    # resolve objectids
+    logdata <- mdl_resolve_objectids(dbpMdl, config$dbprefix, logdata)
     
     logdata <- logdata |> dplyr::select(id, hashuser, relatedhashuser, courseid:objectid, objectname, crud, edulevel)
     

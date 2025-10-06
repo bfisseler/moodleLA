@@ -29,10 +29,10 @@ mdl_logdata <- function(dbp, prefix, courseid, startstamp, stopstamp){
   # checkout pool
   conn <- pool::poolCheckout(dbp)
   on.exit(pool::poolReturn(conn))
-  course_objects <- mdl_course_objects(dbp, prefix, courseid)
+  #course_objects <- mdl_course_objects(dbp, prefix, courseid)
   query <- mdl_logdata_query(prefix, courseid, startstamp, stopstamp)
   logdata <- pool::dbGetQuery(conn, query)
-  logdata <- dplyr::left_join(logdata, course_objects |> select(module_name, objectid, objectname), by = c("component" = "module_name", "objectid" = "objectid"))
+  #logdata <- dplyr::left_join(logdata, course_objects |> select(module_name, objectid, objectname), by = c("component" = "module_name", "objectid" = "objectid"))
 }
 
 #' Raw query for Moodle log data
