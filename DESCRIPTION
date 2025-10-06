@@ -12,7 +12,7 @@ Authors@R:
     person("FernUniversität in Hagen, Germany", role = c("cph"))
              )
 Maintainer: Björn Fisseler <bjoern.fisseler@gmail.com>
-Description: A collection of functions to connect to a 'Moodle' database, cache relevant tables locally and generate learning analytics. 
+Description: A package for R that provides access to Moodle data for learning analytics, including the pseudonymization of personally identifiable information (PII).  
     'Moodle' is an open source Learning Management System (LMS) developed by MoodleHQ. For more information about Moodle, visit <https://moodle.org>.
 License: MIT + file LICENSE
 URL: https://github.com/bfisseler/moodleLA,
