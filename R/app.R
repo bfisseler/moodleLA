@@ -743,7 +743,7 @@ server <- function(input, output, session) {
     if(input$chkboxNamesMFD){
       shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Removing usernames...');")
       tryCatch({
-        user <- mdl_userlist(dbpMdl, config$dbprefix, cid)
+        user <- mdl_userlist(dbpMdl, config$dbprefix, cid, studentsonly = FALSE)
       }, error = function(e) {
         showNotification('Could not retrieve user list.','',type = "error")
         shinyjs::runjs("$('#btnGetLogdata').text('Get Moodle forum messages');")
@@ -764,6 +764,13 @@ server <- function(input, output, session) {
                                                remove_url = input$chkboxURLMFD,
                                                remove_phonenumber = input$chkboxPhoneMFD,
                                                placeholder = input$chkboxReplaceMFD)
+    # pseudonymize subject
+    forumdata$message <- pseudonymize_messages(forumdata$subject, 
+                                               remove_email = input$chkboxFilterEmailMFD,
+                                               remove_url = input$chkboxURLMFD,
+                                               remove_phonenumber = input$chkboxPhoneMFD,
+                                               placeholder = input$chkboxReplaceMFD)
+    
     # run Presidio here
     if(input$chkboxPOSMFD){
       shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymising text using Presidio...');")
@@ -771,6 +778,7 @@ server <- function(input, output, session) {
                                                       language = input$presidioLang,
                                                       analyzer_url    = input$presidioAnalyzer,
                                                       anonymizer_url  = input$presidioAnonymizer)
+      # we don't run Presidio for subject, as this would lead to unreadable subject strings
     }
     
     # pseudonymze
