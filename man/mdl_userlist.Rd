@@ -4,7 +4,7 @@
 \alias{mdl_userlist}
 \title{Provides a list of all users of a Moodle course}
 \usage{
-mdl_userlist(dbp, prefix, courseid, returngroups = FALSE)
+mdl_userlist(dbp, prefix, courseid, returngroups = FALSE, studentsonly = TRUE)
 }
 \arguments{
 \item{dbp}{a pool object for db connection}
@@ -14,6 +14,8 @@ mdl_userlist(dbp, prefix, courseid, returngroups = FALSE)
 \item{courseid}{the unique course ID of the course whose data is being retrieved}
 
 \item{returngroups}{if true, return all groups and groupings for each user}
+
+\item{studentsonly}{return only users enrolled with student role}
 }
 \value{
 A dataframe a list of all users

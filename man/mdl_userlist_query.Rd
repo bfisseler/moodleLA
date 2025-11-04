@@ -4,12 +4,14 @@
 \alias{mdl_userlist_query}
 \title{Raw query for Moodle user list}
 \usage{
-mdl_userlist_query(prefix, courseid)
+mdl_userlist_query(prefix, courseid, studentsonly = TRUE)
 }
 \arguments{
 \item{prefix}{prefix for tables, e.g. "m_"}
 
 \item{courseid}{the unique course ID of the course whose data is being retrieved}
+
+\item{studentsonly}{return only users enrolled with student role}
 }
 \value{
 Character vector with SQL query
