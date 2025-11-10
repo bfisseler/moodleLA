@@ -47,7 +47,7 @@ Imports:
     stats,
     yaml,
     haven,
-    openxlsx,
+    openxlsx2,
     quanteda,
     httr2
 RoxygenNote: 7.3.3

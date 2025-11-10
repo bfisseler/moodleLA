@@ -10,7 +10,7 @@
 #' @importFrom arrow write_feather write_parquet
 #' @importFrom utils write.csv read.csv
 #' @importFrom haven read_sav write_sav
-#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom openxlsx2 read_xlsx write_xlsx
 #' @importFrom tools file_ext file_path_sans_ext
 #' @importFrom pool poolClose poolReturn
 #' @importFrom yaml read_yaml write_yaml
@@ -41,27 +41,39 @@ ui <- bslib::page_navbar(
   lang = "en",
   title = "moodleLA",
   id = "nav",
-  header = tags$div(
-    conditionalPanel(
-      condition = "input.nav !== 'Intro' & input.nav !== 'Pseudonymise Data'",
-      bslib::layout_columns(
-        col_widths = c(10, 2),
-        shiny::selectInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
-        shiny::numericInput("selectLogdataCourseID", "Course-ID", value = 1, min = 1),
-        fillable = FALSE, fill = FALSE
+  fluid = FALSE, # non-fluid layout to limit width of app when displayed in browser
+  header = tagList(
+      tags$div(
+      conditionalPanel(
+        condition = "input.nav !== 'Intro' & input.nav !== 'Pseudonymise Data'",
+        bslib::layout_columns(
+          col_widths = c(10, 2),
+          shiny::selectInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
+          shiny::numericInput("selectLogdataCourseID", "Course-ID", value = 1, min = 1),
+          fillable = FALSE, fill = FALSE
+        )
+      ),
+      conditionalPanel(
+        "false", # always hide the download button
+        downloadButton("downloadData"),
+        downloadButton("downloadLogdata"),
+        downloadButton("downloadMatchdata"),
+        downloadButton("downloadMFD"),
+        downloadButton("downloadPseuddata")
       )
     ),
-    conditionalPanel(
-      "false", # always hide the download button
-      downloadButton("downloadData"),
-      downloadButton("downloadLogdata"),
-      downloadButton("downloadMatchdata"),
-      downloadButton("downloadMFD"),
-      downloadButton("downloadPseuddata")
+    # CSS for centered layout with limited width
+    tags$head(
+      tags$style(HTML("
+        container {
+          max-width: 1280px;
+        }
+      "))
     )
-  ),
+  ), #end tagList
   theme = bslib::bs_theme(5, "flatly"),
   navbar_options = bslib::navbar_options(theme = "auto", collapsible = TRUE),
+  
   #begin nav_panel 1
   bslib::nav_panel(title = "Intro",
             shiny::includeMarkdown("frontpage.md")
@@ -100,7 +112,7 @@ ui <- bslib::page_navbar(
             ),
             p("4. Select the preferred output file format."),
             bslib::layout_columns(
-              col_widths = c(4, 8),
+              col_widths = c(4),
               shiny::selectInput("selectLogdataOutputFormat","File format:", choices = c("CSV", "Feather", "Parquet"), selected = "CSV", multiple = FALSE),
               fillable = FALSE, fill = FALSE
             ),
@@ -139,7 +151,7 @@ ui <- bslib::page_navbar(
             ),
             p("3. Select the preferred output file format."),
             bslib::layout_columns(
-              col_widths = c(4, 8),
+              col_widths = c(4),
               shiny::selectInput("selectOutputFormatMFD","File format:", choices = c("CSV", "Feather", "Parquet"), selected = "CSV", multiple = FALSE),
               fillable = FALSE, fill = FALSE
             ),
@@ -416,7 +428,11 @@ server <- function(input, output, session) {
   observeEvent(input$loadProjConfig, {
     req(input$loadProjConfig)
     # read file
-    config_data <- yaml::read_yaml(input$loadProjConfig$datapath)
+    tryCatch({
+      config_data <- yaml::read_yaml(input$loadProjConfig$datapath)
+    }, error = function(e) {
+      showNotification("Error reading configuration file. Please YAML file.", type = "warning", duration = 5) #, e$message)
+    })
     
     # enter values into input fields
     # project name
@@ -913,7 +929,7 @@ server <- function(input, output, session) {
       } else if(tolower(dataFileExt) == "sav"){
         dfTemp <- haven::read_sav(input$surveyData$datapath)
       } else if(tolower(dataFileExt) == "xlsx"){
-        dfTemp <- openxlsx::read.xlsx(input$surveyData$datapath, sheet = 1)
+        dfTemp <- openxlsx2::read_xlsx(input$surveyData$datapath, sheet = 1)
       }
       
     }, error = function(e){
@@ -1056,7 +1072,7 @@ server <- function(input, output, session) {
       } else if(tolower(dlExt) == "sav"){
         haven::write_sav(exportData(), file, compress = "zsav")
       } else if(tolower(dlExt) == "xlsx"){
-        openxlsx::write.xlsx(exportData(), file)
+        openxlsx2::write_xlsx(exportData(), file)
       }
       exportData(NULL)
     })
@@ -1085,7 +1101,7 @@ server <- function(input, output, session) {
       } else if(tolower(dataFileExt) == "sav"){
         dfTemp <- haven::read_sav(input$pseudData$datapath)
       } else if(tolower(dataFileExt) == "xlsx"){
-        dfTemp <- openxlsx::read.xlsx(input$pseudData$datapath, sheet = 1)
+        dfTemp <- openxlsx2::read_xlsx(input$pseudData$datapath, sheet = 1)
       }
     }, error = function(e){
       
@@ -1181,7 +1197,7 @@ server <- function(input, output, session) {
       } else if(tolower(dlExt) == "sav"){
         haven::write_sav(exportData(), file, compress = "zsav")
       } else if(tolower(dlExt) == "xlsx"){
-        openxlsx::write.xlsx(exportData(), file)
+        openxlsx2::write_xlsx(exportData(), file)
       }
       exportData(NULL)
     })
