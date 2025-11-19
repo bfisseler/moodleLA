@@ -773,15 +773,16 @@ server <- function(input, output, session) {
       forumdata$message <- remove_names(forumdata$message, firstnames, lastnames, nicknames = TRUE, language = input$presidioLang)
     }
     
-    # pseudonymising text
-    shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymising text...');")
-    forumdata$message <- pseudonymize_messages(forumdata$message, 
+    # pseudonymize subject
+    forumdata$subject <- pseudonymize_messages(forumdata$subject, 
                                                remove_email = input$chkboxFilterEmailMFD,
                                                remove_url = input$chkboxURLMFD,
                                                remove_phonenumber = input$chkboxPhoneMFD,
                                                placeholder = input$chkboxReplaceMFD)
-    # pseudonymize subject
-    forumdata$message <- pseudonymize_messages(forumdata$subject, 
+    
+    # pseudonymising text
+    shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymising text...');")
+    forumdata$message <- pseudonymize_messages(forumdata$message, 
                                                remove_email = input$chkboxFilterEmailMFD,
                                                remove_url = input$chkboxURLMFD,
                                                remove_phonenumber = input$chkboxPhoneMFD,
