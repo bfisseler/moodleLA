@@ -651,9 +651,9 @@ server <- function(input, output, session) {
     shinyjs::runjs("$('#btnGetLogdata').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Pseudonymizing data...');")
     
     userlist$hashuser <- pseudonymize(userlist$username, config$pepper)
-    logdata <- left_join(logdata, userlist |> dplyr::select(id, hashuser), by = c("userid" = "id"))
+    logdata <- dplyr::left_join(logdata, userlist |> dplyr::select(id, hashuser), by = c("userid" = "id"))
     colnames(userlist)[colnames(userlist) == "hashuser"] <- "relatedhashuser"
-    logdata <- left_join(logdata, userlist |> dplyr::select(id, relatedhashuser), by = c("relateduserid" = "id"))
+    logdata <- dplyr::left_join(logdata, userlist |> dplyr::select(id, relatedhashuser), by = c("relateduserid" = "id"))
     # resolve objectids
     logdata <- mdl_resolve_objectids(dbpMdl, config$dbprefix, logdata)
     

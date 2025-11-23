@@ -11,7 +11,6 @@
 #' @importFrom pool dbGetQuery
 #' @importFrom pool poolCheckout
 #' @importFrom pool poolReturn
-#' @importFrom dplyr left_join
 #' @importFrom dplyr select
 #' @return A dataframe with the logdata, restricted to tbd
 #' @export
