@@ -103,16 +103,25 @@ ui <- bslib::page_navbar(
             p("2. Specify a date range for which the log data should be downloaded."),
             p("The log data will be downloaded from 12:00 AM (00:00) of the first date to 11:59 PM (23:59) of the second date."),
             shiny::dateRangeInput(inputId = "dateRangeLogdata", label = "Date Range", weekstart = 1, width = "100%"),
-            p("3. Select data wranglings from the list or enter your own R code snippet"),
+            p("3. Select data wranglings from the list."),
             bslib::layout_columns(
-              col_widths = c(4, 8),
-              shiny::selectInput("selectLogdataWrangling","Select data wrangling", choices = c("As is" = "raw", "R Code" = "R"), selected = "", multiple = FALSE),
-              shiny::textAreaInput("textInputLogdataWrangling", "Enter R code for data processing", rows = 10),
+              col_widths = c(6),
+              shiny::fileInput("btnLoadWranglingCode", label = "", buttonLabel = "Load code file", accept = c(".yml", ".yaml")),
+              fillable = FALSE, fill = FALSE
+            ),
+            bslib::layout_columns(
+              col_widths = c(6, 6),
+              shiny::selectInput("selectLogdataWrangling","Select data wrangling", choices = c("Unchanged" = "unchanged"), selected = "unchanged", multiple = FALSE),
+              #shiny::textAreaInput("textInputLogdataWrangling", "Enter R code for data processing", rows = 10),
+              tags$div(
+                style = "margin-top: 2em;",  # Passe den Wert nach Bedarf an
+                shiny::verbatimTextOutput("textOutputDescriptionWrangling", placeholder = TRUE)
+              ),
               fillable = FALSE, fill = FALSE
             ),
             p("4. Select the preferred output file format."),
             bslib::layout_columns(
-              col_widths = c(4),
+              col_widths = c(6),
               shiny::selectInput("selectLogdataOutputFormat","File format:", choices = c("CSV", "Feather", "Parquet"), selected = "CSV", multiple = FALSE),
               fillable = FALSE, fill = FALSE
             ),
@@ -373,6 +382,7 @@ server <- function(input, output, session) {
   exportData <- reactiveVal(NULL) # this reactive store the processed data for automatic download, see: https://stackoverflow.com/questions/75675984/r-shiny-how-to-have-an-action-button-that-automatically-downloads-a-csv-file
   importData <- NULL # reactiveVal(NULL) # reactive used to store input data uploaded, e.g. for matching survey data
   importDataFilename <- NULL #reactiveVal()
+  wranglingFunc <- NULL
   
   # --------- 
   # reactives 
@@ -614,6 +624,19 @@ server <- function(input, output, session) {
     }
   })
   
+  # btnLoadWranglingCode
+  observeEvent(input$btnLoadWranglingCode,{
+    req(input$btnLoadWranglingCode)
+    wranglingFunc <<- load_functions(input$btnLoadWranglingCode$datapath)
+    # add row with as-is at top
+    as_is <- data.frame(name = "Unchanged", id = "unchanged", description = "Leave logdata unchanged, no additional data wrangling", code = "")
+    wranglingFunc <<- rbind(as_is, wranglingFunc)
+    # update selection
+    updateSelectInput(session, "selectLogdataWrangling", choices = stats::setNames(wranglingFunc$id, wranglingFunc$name), label = NULL)
+
+  })
+  
+  
   # btnGetLogdata
   observeEvent(input$btnGetLogdata,{
     req(input$selectLogdataCourse)
@@ -661,12 +684,20 @@ server <- function(input, output, session) {
     
     # additional data processing
     shinyjs::runjs("$('#btnGetLogdata').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Processing data...');")
+    wrangling <- input$selectLogdataWrangling
+    if(wrangling == "unchanged"){
+      #print("do nothing")
+    }else{
+      logdata <- shape_logdata(logdata, wranglingFunc$code[wranglingFunc$id == wrangling], fun_name = wranglingFunc$id[wranglingFunc$id == wrangling])
+    }
     
     # set variable for data export
     shinyjs::runjs("$('#btnGetLogdata').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(logdata)
     shinyjs::runjs("$('#downloadLogdata')[0].click();") # DOWNLOAD BUTTON
     shinyjs::runjs("$('#btnGetLogdata').text('Process Moodle Logdata');")
+    # reset btnLoadWranglingCode
+    shinyjs::reset("btnLoadWranglingCode")
   })
   
   # downloadLogdata
