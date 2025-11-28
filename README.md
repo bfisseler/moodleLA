@@ -35,7 +35,7 @@ touch!
 To install the latest development version:
 
 ``` r
-devtools::install("bfisseler/moodleLA")
+devtools::install_github("bfisseler/moodleLA")
 ```
 
 You will also need to install [Microsoft

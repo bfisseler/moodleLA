@@ -36,7 +36,7 @@ Please note that the package is still under active development and has not yet b
 To install the latest development version:
 
 ```{r, eval=FALSE}
-devtools::install("bfisseler/moodleLA")
+devtools::install_github("bfisseler/moodleLA")
 ```
 
 You will also need to install [Microsoft Presidio](https://github.com/microsoft/presidio) using Docker for additional detecting and filtering PII. You can (and should) customize Microsoft Presidio based on your needs and the language used. There will be more instructions on how to configure Microsoft Presidio for use with moodleLA at the end of 2025.

@@ -115,7 +115,7 @@ ui <- bslib::page_navbar(
               #shiny::textAreaInput("textInputLogdataWrangling", "Enter R code for data processing", rows = 10),
               tags$div(
                 style = "margin-top: 2em;",  # Passe den Wert nach Bedarf an
-                shiny::verbatimTextOutput("textOutputDescriptionWrangling", placeholder = TRUE)
+                shiny::textOutput("textOutputDescriptionWrangling")
               ),
               fillable = FALSE, fill = FALSE
             ),
@@ -634,6 +634,17 @@ server <- function(input, output, session) {
     # update selection
     updateSelectInput(session, "selectLogdataWrangling", choices = stats::setNames(wranglingFunc$id, wranglingFunc$name), label = NULL)
 
+  })
+  
+  # change explanation on select
+  observeEvent(input$selectLogdataWrangling, {
+    req(input$selectLogdataWrangling)
+    wrangling <- input$selectLogdataWrangling
+    if(wrangling == "unchanged"){
+      output$textOutputDescriptionWrangling <- renderText("Load raw logdata without processing.")
+    }else{
+      output$textOutputDescriptionWrangling <- renderText(wranglingFunc$description[wranglingFunc$id == wrangling])
+    }
   })
   
   

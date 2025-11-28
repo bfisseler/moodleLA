@@ -8,7 +8,7 @@
 #' @noRd
 load_functions <- function(yaml_file){
   result <- tryCatch({
-    yaml_data <- suppressMessages(yaml::read_yaml(yaml_file), classes = "warning")
+    yaml_data <- suppressWarnings(yaml::read_yaml(yaml_file), classes = "warning")
     df <- dplyr::bind_rows(lapply(yaml_data$functions, as.data.frame))
     return(df)
   }, error = function(e) {
