@@ -75,9 +75,10 @@ ui <- bslib::page_navbar(
   navbar_options = bslib::navbar_options(theme = "auto", collapsible = TRUE),
   
   #begin nav_panel 1
-  bslib::nav_panel(title = "Intro",
-            shiny::includeMarkdown("frontpage.md")
-  ),
+  bslib::nav_panel(title = "Intro", shiny::includeMarkdown(system.file("frontpage.md", package = "moodleLA"))),
+  #bslib::nav_panel(title = "Intro",
+  #          shiny::includeMarkdown("frontpage.md")
+  #),
   # end nav_panel 1
   
   # ----
