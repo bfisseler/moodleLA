@@ -283,6 +283,7 @@ ui <- bslib::page_navbar(
 # Define server logic
 server <- function(input, output, session) {
   #shinyjs::hide("saveProjConfig")
+  options(shiny.maxRequestSize = 100 * 1024^2) # Set limit to 100MB
   
   # onStart: deactivate all btn elements
   # ----
@@ -977,7 +978,16 @@ server <- function(input, output, session) {
       }
       
     }, error = function(e){
-      
+      if(tolower(dataFileExt) == "csv" ){
+        shiny::showNotification('Could not load the CSV file. Please check if the file or the file extension is defective.','',type = "error")
+        return()
+      } else if(tolower(dataFileExt) == "sav"){
+        shiny::showNotification('Could not load the SAV file. Please check if the file or the file extension is defective.','',type = "error")
+        return()
+      } else if(tolower(dataFileExt) == "xlsx"){
+        shiny::showNotification('Could not load the XLSX file. Please check if the file or the file extension is defective.','',type = "error")
+        return()
+      }
     })
     # enable inspect data
     shinyjs::enable("btnInspectSurveyData")
@@ -987,6 +997,11 @@ server <- function(input, output, session) {
                                 hover = TRUE,
                                 spacing = "s"
     )
+    if(!exists(quote(dfTemp))){
+      shiny::showNotification('An error occured reading the data file. Please check if the file is defective.', type = "error")
+      shinyjs::reset("surveyData")
+      return()
+    }
     
     importDataFilename <<- input$surveyData$name
     importData <<- dfTemp
@@ -1028,7 +1043,7 @@ server <- function(input, output, session) {
     # get data to match with
     shinyjs::runjs("$('#btnSurveyMatching').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Retrieving data to match with...');")
     
-    if(input$selectSurveyMatchingVarIs == "Moodle-ID" | input$selectSurveyMatchingVarIs == "E-Mail"){
+    if(input$selectSurveyMatchingVarIs == "Moodle-ID" | input$selectSurveyMatchingVarIs == "Email"){
       tryCatch({
         matchlist <- mdl_userlist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourse))
       }, error = function(e) {
@@ -1063,20 +1078,59 @@ server <- function(input, output, session) {
       matchlist <- matchlist |> dplyr::select(-email) |> dplyr::filter(id %in% dta[[matchingVar]])
       # check if userlist = 0
       
-      dta_out <- dplyr::left_join(dta, matchlist, by = setNames("id", matchingVar))
+      tryCatch({
+        dta_out <- dplyr::left_join(dta, matchlist, by = setNames("id", matchingVar))
+      }, error = function(e) {
+        showNotification('Could not match data. Please check data file for unique column names.','',type = "error")
+        return(NULL)
+      })
+      # in case there was an error on matching
+      if(!exists("dta_out")){
+        resetMatchPseudGUI()
+        return()
+      }
       # remove matchingVar
       dta_out <- dta_out |> dplyr::select(-matchingVar)
       # move hashuser to the front
       dta_out <- dta_out |> dplyr::select(hashuser, 1:(ncol(dta_out) - 1))
     }else if(input$selectSurveyMatchingVarIs == "Email"){
-      # TODO
+      dta[[matchingVar]] <- as.character(dta[[matchingVar]]) # ensure variable is of type character
+      # filter matchlist for group-ids that are also in the dta data
+      matchlist <- matchlist |> dplyr::filter(email %in% dta[[matchingVar]])
+      # check if matchlist = 0
+      
+      tryCatch({
+        dta_out <- dplyr::left_join(dta, matchlist, by = setNames("email", matchingVar))
+      }, error = function(e) {
+        showNotification('Could not match data. Please check data file for unique column names.','',type = "error")
+        return(NULL)
+      })
+      # in case there was an error on matching
+      if(!exists("dta_out")){
+        resetMatchPseudGUI()
+        return()
+      }
+      # remove matchingVar
+      dta_out <- dta_out |> dplyr::select(-matchingVar)
+      # move hashgroup to the front
+      dta_out <- dta_out |> dplyr::select(hashuser, 1:(ncol(dta_out) - 1))
     }else if(input$selectSurveyMatchingVarIs == "Group-ID"){
       dta[[matchingVar]] <- as.integer(dta[[matchingVar]]) # ensure variables are numeric
       # filter matchlist for group-ids that are also in the dta data
       matchlist <- matchlist |> dplyr::filter(groupid %in% dta[[matchingVar]])
       # check if matchlist = 0
       
-      dta_out <- dplyr::left_join(dta, matchlist, by = setNames("groupid", matchingVar))
+      tryCatch({
+        dta_out <- dplyr::left_join(dta, matchlist, by = setNames("groupid", matchingVar))
+      }, error = function(e) {
+        showNotification('Could not match data. Please check data file for unique column names.','',type = "error")
+        return(NULL)
+      })
+      # in case there was an error on matching
+      if(!exists("dta_out")){
+        resetMatchPseudGUI()
+        return()
+      }
       # remove matchingVar
       dta_out <- dta_out |> dplyr::select(-matchingVar)
       # move hashgroup to the front
@@ -1089,10 +1143,13 @@ server <- function(input, output, session) {
     shinyjs::runjs("$('#btnSurveyMatching').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(shuffle(shuffle(dta_out)))
     shinyjs::runjs("$('#downloadMatchdata')[0].click();") # DOWNLOAD BUTTON
-    shinyjs::runjs("$('#btnSurveyMatching').text('Match & pseudonymise data');")
-    
-    # reset UI
+    resetMatchPseudGUI()
+  })
+  
+  # reset UI
+  resetMatchPseudGUI <- function(){
     importData <- NULL
+    shinyjs::runjs("$('#btnSurveyMatching').text('Match & pseudonymise data');")
     shinyjs::disable("btnSurveyMatching")
     shinyjs::disable("btnInspectSurveyData")
     shinyjs::reset("surveyData")
@@ -1100,7 +1157,7 @@ server <- function(input, output, session) {
     shinyjs::reset("selectSurveyMatchingVar")
     shinyjs::reset("selectSurveyMatchingVarIs")
     shinyjs::reset("selectSurveyRemoveVars")
-  })
+  }
   
   # download matched data
   output$downloadMatchdata <- downloadHandler(
