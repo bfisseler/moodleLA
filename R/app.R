@@ -333,9 +333,9 @@ server <- function(input, output, session) {
   iv_ml$add_rule("dateRangeLogdata", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataWrangling", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataOutputFormat", shinyvalidate::sv_required())
-  # iv_ml$add_rule("pepper", shinyvalidate::sv_required())
-  # iv_ml$add_rule("pepper", shinyvalidate::sv_regex("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*]).{12,50}$", perl = TRUE, message = "Pepper should be 12 to 20 chars, containing upper and lower case letters, at least one number and one special character (#?!@$ %^&*)."))
-  # iv_ml$enable()
+  iv_ml$add_rule("pepper", shinyvalidate::sv_required())
+  iv_ml$add_rule("pepper", shinyvalidate::sv_regex("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*]).{12,50}$", perl = TRUE, message = "Pepper should be 12 to 20 chars, containing upper and lower case letters, at least one number and one special character (#?!@$ %^&*)."))
+  iv_ml$enable()
   
   # validator for Moodle forum data
   iv_mfd <- shinyvalidate::InputValidator$new()
