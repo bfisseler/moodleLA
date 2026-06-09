@@ -48,7 +48,7 @@ ui <- bslib::page_navbar(
         condition = "input.nav !== 'Intro' & input.nav !== 'Pseudonymise Data'",
         bslib::layout_columns(
           col_widths = c(10, 2),
-          shiny::selectInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
+          shiny::selectizeInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
           shiny::numericInput("selectLogdataCourseID", "Course-ID", value = 1, min = 1),
           fillable = FALSE, fill = FALSE
         )
@@ -583,7 +583,8 @@ server <- function(input, output, session) {
       # now populate selectList with courses
       tryCatch({
         courselist <- mdl_courses(dbpMdl, config$dbprefix)
-        updateSelectInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL)
+        #updateSelectInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL)
+        updateSelectizeInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL, options= list(maxOptions = nrow(courselist)))
       }, warning = function(w) {
         showNotification('Could not retrieve course list from database.','',type = "error")
         return()
@@ -933,7 +934,7 @@ server <- function(input, output, session) {
     updateNumericInput(session, "selectLogdataCourseID", value = as.numeric(input$selectLogdataCourse))
   })
   observeEvent(input$selectLogdataCourseID, {
-    updateSelectInput(session, "selectLogdataCourse", selected = as.character(input$selectLogdataCourseID))
+    updateSelectizeInput(session, "selectLogdataCourse", selected = as.character(input$selectLogdataCourseID))
   })
   
   # -------------------------
