@@ -579,7 +579,8 @@ server <- function(input, output, session) {
 
     if(class(dbpMdl)[1] == "Pool") {
       showNotification("DB connection established.", type = "message")
-      bslib::sidebar_toggle(id = "sidebar", open = FALSE)
+      #bslib::sidebar_toggle(id = "sidebar", open = FALSE)
+      bslib::toggle_sidebar(id = "sidebar", open = FALSE)
       # now populate selectList with courses
       tryCatch({
         courselist <- mdl_courses(dbpMdl, config$dbprefix)
