@@ -47,9 +47,13 @@ ui <- bslib::page_navbar(
       conditionalPanel(
         condition = "input.nav !== 'Intro' & input.nav !== 'Pseudonymise Data'",
         bslib::layout_columns(
-          col_widths = c(10, 2),
-          shiny::selectizeInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
+          col_widths = c(2, 10),
           shiny::numericInput("selectLogdataCourseID", "Course-ID", value = 1, min = 1),
+          tags$div(
+            style = "margin-top: 2em;",  # Passe den Wert nach Bedarf an
+            shiny::textOutput("txtLogdataCourse")
+          ),
+          #shiny::selectizeInput("selectLogdataCourse", "Select course", choices = "", multiple = FALSE),
           fillable = FALSE, fill = FALSE
         )
       ),
@@ -308,7 +312,6 @@ server <- function(input, output, session) {
   iv_db$add_rule("dbtype", shinyvalidate::sv_required())
   iv_db$add_rule("dbname", shinyvalidate::sv_required())
   iv_db$add_rule("dbhost", shinyvalidate::sv_required())
-  #iv_db$add_rule("dbhost", shinyvalidate::sv_regex("^[A-Za-z0-9-_]+\\.[A-Za-z0-9]+\\.[A-Za-z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", perl = TRUE, message = "Enter valid URL for host"))
   iv_db$add_rule("dbhost", shinyvalidate::sv_regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?", perl = TRUE, message = "Enter valid URL for host"))
   iv_db$add_rule("dbport", shinyvalidate::sv_required())
   iv_db$add_rule("dbprefix", shinyvalidate::sv_required())
@@ -324,12 +327,14 @@ server <- function(input, output, session) {
   
   # validator for course list
   iv_cl <- shinyvalidate::InputValidator$new()
-  iv_cl$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  #iv_cl$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  iv_cl$add_rule("selectLogdataCourseID", shinyvalidate::sv_required())
   iv_cl$enable()
   
   # validator for Moodle Logdata
   iv_ml <- shinyvalidate::InputValidator$new()
-  iv_ml$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  #iv_ml$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  iv_cl$add_rule("selectLogdataCourseID", shinyvalidate::sv_required())
   iv_ml$add_rule("dateRangeLogdata", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataWrangling", shinyvalidate::sv_required())
   iv_ml$add_rule("selectLogdataOutputFormat", shinyvalidate::sv_required())
@@ -339,14 +344,16 @@ server <- function(input, output, session) {
   
   # validator for Moodle forum data
   iv_mfd <- shinyvalidate::InputValidator$new()
-  iv_mfd$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  #iv_mfd$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  iv_cl$add_rule("selectLogdataCourseID", shinyvalidate::sv_required())
   iv_mfd$add_rule("selectOutputFormatMFD", shinyvalidate::sv_required())
   iv_mfd$add_rule("selectForumsMFD", shinyvalidate::sv_required())
   iv_mfd$enable()
   
   # validator for Match & Pseudonymise Data
   iv_mpd <- shinyvalidate::InputValidator$new()
-  iv_mpd$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  #iv_mpd$add_rule("selectLogdataCourse", shinyvalidate::sv_required())
+  iv_cl$add_rule("selectLogdataCourseID", shinyvalidate::sv_required())
   iv_mpd$add_rule("surveyData", shinyvalidate::sv_required())
   iv_mpd$add_rule("selectSurveyMatchingVar", shinyvalidate::sv_required())
   iv_mpd$add_rule("selectSurveyMatchingVarIs", shinyvalidate::sv_required())
@@ -385,6 +392,20 @@ server <- function(input, output, session) {
   importData <- NULL # reactiveVal(NULL) # reactive used to store input data uploaded, e.g. for matching survey data
   importDataFilename <- NULL #reactiveVal()
   wranglingFunc <- NULL
+  
+  # Gültige IDs (aus deinem courselist)
+  #valid_ids <- sort(courselist()$courseid)
+  valid_ids <- reactive({
+    req(courselist())
+    sort(courselist()$courseid)
+  })
+  
+  # Reactive für den *akzeptierten* Wert (nicht der momentane input$...)
+  current_valid_id <- reactiveVal(3) #reactiveVal(ifelse(3 %in% valid_ids, 3, min(valid_ids)))
+  
+  # Richtung merken: "up", "down", oder "manual"
+  last_direction <- reactiveVal("manual")  # Startwert ist egal, wird bei erster Änderung überschrieben
+  
   
   # --------- 
   # reactives 
@@ -583,9 +604,11 @@ server <- function(input, output, session) {
       bslib::toggle_sidebar(id = "sidebar", open = FALSE)
       # now populate selectList with courses
       tryCatch({
-        courselist <- mdl_courses(dbpMdl, config$dbprefix)
+        cl <- mdl_courses(dbpMdl, config$dbprefix)
+        courselist(cl)
+        updateNumericInput(session, "selectLogdataCourseID", value = min(cl$courseid), min = min(cl$courseid), max = max(cl$courseid))
         #updateSelectInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL)
-        updateSelectizeInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL, options= list(maxOptions = nrow(courselist)))
+        #updateSelectizeInput(session, "selectLogdataCourse", choices = stats::setNames(courselist$courseid, courselist$fullname), label = NULL, options= list(maxOptions = nrow(courselist)))
       }, warning = function(w) {
         showNotification('Could not retrieve course list from database.','',type = "error")
         return()
@@ -654,7 +677,7 @@ server <- function(input, output, session) {
   
   # btnGetLogdata
   observeEvent(input$btnGetLogdata,{
-    req(input$selectLogdataCourse)
+    req(input$selectLogdataCourseID)
     # add additional req checks here
     
     # build sql for logdata
@@ -663,7 +686,7 @@ server <- function(input, output, session) {
     stopTimestamp <- as.integer(as.POSIXct(input$dateRangeLogdata[2])) + 86399
     
     tryCatch({
-      course_id <- as.integer(input$selectLogdataCourse)
+      course_id <- as.integer(input$selectLogdataCourseID)
       logdata <- mdl_logdata(dbpMdl, config$dbprefix, course_id, startTimestamp, stopTimestamp)
       userlist <- mdl_userlist(dbpMdl, config$dbprefix , course_id)
       #courseobjects <- mdl_course_objects(dbpMdl, config$dbprefix, course_id)
@@ -718,7 +741,7 @@ server <- function(input, output, session) {
   # downloadLogdata
   output$downloadLogdata <- downloadHandler(
     filename = function() {
-      fn <- genFileName(projname = config$projname, eventname = "logdata", courseid = as.integer(input$selectLogdataCourse))
+      fn <- genFileName(projname = config$projname, eventname = "logdata", courseid = as.integer(input$selectLogdataCourseID))
       if(input$selectLogdataOutputFormat == "CSV"){
         paste0(fn, ".csv")
       } else if(input$selectLogdataOutputFormat == "Parquet"){
@@ -769,13 +792,13 @@ server <- function(input, output, session) {
   
   # btnGetMFD
   observeEvent(input$btnGetMFD,{
-    req(input$selectLogdataCourse)
+    req(input$selectLogdataCourseID)
     # add additional req checks here
     
     # build sql for logdata
     shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Querying database...');")
     
-    cid <- as.integer(input$selectLogdataCourse) # courseid
+    cid <- as.integer(input$selectLogdataCourseID) # courseid
     fid <- as.integer(input$selectForumsMFD) # forums id
     
     if(length(fid) == 0){
@@ -861,7 +884,7 @@ server <- function(input, output, session) {
   # downloadLogdata
   output$downloadMFD <- downloadHandler(
     filename = function() {
-      fn <- genFileName(projname = config$projname, eventname = "forumdata", courseid = as.integer(input$selectLogdataCourse))
+      fn <- genFileName(projname = config$projname, eventname = "forumdata", courseid = as.integer(input$selectLogdataCourseID))
       if(input$selectLogdataOutputFormat == "CSV"){
         paste0(fn, ".csv")
       } else if(input$selectLogdataOutputFormat == "Parquet"){
@@ -896,11 +919,10 @@ server <- function(input, output, session) {
   
   # observe btnGetUserList
   observeEvent(input$btnGetUserlist,{
-      req(input$selectLogdataCourse)
-      #userlist <- mdl_userlist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourse))
+      req(input$selectLogdataCourseID)
       
       tryCatch({
-        userlist <- mdl_userlist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourse), returngroups = TRUE)
+        userlist <- mdl_userlist(dbpMdl,config$dbprefix, as.integer(input$selectLogdataCourseID), returngroups = TRUE)
       }, warning = function(w) {
         showNotification('Could not retrieve user list.','',type = "error")
         return()
@@ -923,7 +945,7 @@ server <- function(input, output, session) {
   # download userlist
   output$downloadData <- downloadHandler(
     filename = function() { 
-      fn <- genFileName(projname = config$projname, eventname = "userlist", courseid = as.integer(input$selectLogdataCourse))
+      fn <- genFileName(projname = config$projname, eventname = "userlist", courseid = as.integer(input$selectLogdataCourseID))
       paste0(fn, ".csv")
     },
     content = function(file) {
@@ -931,11 +953,54 @@ server <- function(input, output, session) {
     })
   
   # course selector logic
-  observeEvent(input$selectLogdataCourse, {
-    updateNumericInput(session, "selectLogdataCourseID", value = as.numeric(input$selectLogdataCourse))
+  # observeEvent(input$selectLogdataCourse, {
+  #   updateNumericInput(session, "selectLogdataCourseID", value = as.numeric(input$selectLogdataCourse))
+  # })
+  # observeEvent(input$selectLogdataCourseID, {
+  #   output$txtLogdataCourse <- renderText(courselist$fullname[courselist$courseid == input$selectLogdataCourseID])
+  #   #updateSelectizeInput(session, "selectLogdataCourse", selected = as.character(input$selectLogdataCourseID))
+  # })
+  # we slow down the event handling
+  debounced_input <- debounce(
+    reactive({ input$selectLogdataCourseID }),
+    millis = 500
+  )
+  
+  # and handle the debounced input
+  observeEvent(debounced_input(), {
+    val <- debounced_input()
+    ids <- valid_ids()
+    
+    # 1. determine direction of change, in comparison to the last accepted value
+    if (is.na(val)) return()
+    
+    dir <- if (val > current_valid_id()) "up" 
+            else if (val < current_valid_id()) "down" 
+            else last_direction()
+            last_direction(dir)
+    
+    # 2. is val a valid courseid? -> accept
+    if (val %in% valid_ids()) { # modify
+      current_valid_id(val)
+      return()
+    }
+    
+    # 3. not valid -> modify value based on direction
+    corrected <- switch(dir,
+                        "up"    = { larger <- ids[ids > val]; if(length(larger)) min(larger) else max(ids) },
+                        "down"  = { smaller <- ids[ids < val]; if(length(smaller)) max(smaller) else min(ids) },
+                        "manual"= { dists <- abs(ids - val); ids[which.min(dists)] }
+    )
+    
+    # 4. Update des Inputs (damit GUI korrigierten Wert anzeigt)
+    updateNumericInput(session, "selectLogdataCourseID", value = corrected)
+    current_valid_id(corrected)
   })
-  observeEvent(input$selectLogdataCourseID, {
-    updateSelectizeInput(session, "selectLogdataCourse", selected = as.character(input$selectLogdataCourseID))
+  
+  output$txtLogdataCourse <- renderText({
+    req(current_valid_id(), courselist())
+    course_row <- courselist()[courselist()$courseid == current_valid_id(), ]
+    if (nrow(course_row) > 0) course_row$fullname else "Kein Kurs gefunden"
   })
   
   # -------------------------
@@ -1029,7 +1094,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$btnSurveyMatching, {
     req(dbpMdl)
-    req(input$selectLogdataCourse)
+    req(input$selectLogdataCourseID)
 
     dta <- importData
     
@@ -1047,7 +1112,7 @@ server <- function(input, output, session) {
     
     if(input$selectSurveyMatchingVarIs == "Moodle-ID" | input$selectSurveyMatchingVarIs == "Email"){
       tryCatch({
-        matchlist <- mdl_userlist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourse))
+        matchlist <- mdl_userlist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourseID))
       }, error = function(e) {
         showNotification('Could not retrieve user list.','',type = "error")
         return()
@@ -1060,7 +1125,7 @@ server <- function(input, output, session) {
       matchlist <- matchlist |> dplyr::select(-username) 
     }else if(input$selectSurveyMatchingVarIs == "Group-ID"){
       tryCatch({
-        matchlist <- mdl_grouplist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourse))
+        matchlist <- mdl_grouplist(dbpMdl,config$dbprefix ,as.integer(input$selectLogdataCourseID))
       }, error = function(e) {
         showNotification('Could not retrieve group list.','',type = "error")
         return()
