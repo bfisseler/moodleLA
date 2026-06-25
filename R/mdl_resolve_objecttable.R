@@ -25,8 +25,13 @@ mdl_resolve_objectids <- function(dbp, prefix, logdata){
   })
 
   resolve_results <- do.call(rbind, resolve_results)
-
-  logdata <- dplyr::left_join(logdata, resolve_results, by = c("objecttable" = "objecttable", "objectid" = "objectid"))
+  tryCatch({
+    logdata2 <- dplyr::left_join(logdata, resolve_results, by = c("objecttable" = "objecttable", "objectid" = "objectid"))
+    return(logdata2)
+  }, error = function(e) {
+    return(logdata)
+  })
+  
 }
 
 #' Resolves all objecttable and objectids in the provided Moodle logdata

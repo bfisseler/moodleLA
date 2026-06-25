@@ -15,7 +15,7 @@
 #' @importFrom pool poolClose poolReturn
 #' @importFrom yaml read_yaml write_yaml
 #' @importFrom stats setNames
-#' @importFrom shinyjs useShinyjs disable enable runjs reset
+#' @importFrom shinyjs useShinyjs disable enable runjs reset click
 #' @importFrom tm removeWords
 #' @importFrom utils head
 #' @examples 
@@ -57,9 +57,10 @@ ui <- bslib::page_navbar(
           fillable = FALSE, fill = FALSE
         )
       ),
-      conditionalPanel(
-        "false", # always hide the download button
-        downloadButton("downloadData"),
+      #conditionalPanel(
+      #  "true", # always hide the download button
+      tags$div(style = "position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;",
+        downloadButton("downloadData", enabled = TRUE),
         downloadButton("downloadLogdata"),
         downloadButton("downloadMatchdata"),
         downloadButton("downloadMFD"),
@@ -300,7 +301,7 @@ server <- function(input, output, session) {
   shinyjs::disable("btnGetMFD")
   shinyjs::disable("btnInspectPseudData")
   shinyjs::disable("btnInspectSurveyData")
-  shinyjs::disable("chkboxPOSMFD")
+  #shinyjs::disable("chkboxPOSMFD")
   
   # ----------
   # validators
@@ -373,6 +374,10 @@ server <- function(input, output, session) {
   # variables #
   # --------- #
   
+  # --------- 
+  # reactives 
+  # --------- 
+  
   # configuration stored as reactiveValues
   config <- reactiveValues()
   observe({
@@ -387,6 +392,7 @@ server <- function(input, output, session) {
     config$pepper = input$pepper
   })
   
+  dbConnected <- reactiveVal(FALSE)
   courselist <- reactiveVal(NULL)
   exportData <- reactiveVal(NULL) # this reactive store the processed data for automatic download, see: https://stackoverflow.com/questions/75675984/r-shiny-how-to-have-an-action-button-that-automatically-downloads-a-csv-file
   importData <- NULL # reactiveVal(NULL) # reactive used to store input data uploaded, e.g. for matching survey data
@@ -394,7 +400,6 @@ server <- function(input, output, session) {
   wranglingFunc <- NULL
   
   # Gültige IDs (aus deinem courselist)
-  #valid_ids <- sort(courselist()$courseid)
   valid_ids <- reactive({
     req(courselist())
     sort(courselist()$courseid)
@@ -406,10 +411,13 @@ server <- function(input, output, session) {
   # Richtung merken: "up", "down", oder "manual"
   last_direction <- reactiveVal("manual")  # Startwert ist egal, wird bei erster Änderung überschrieben
   
-  
-  # --------- 
-  # reactives 
-  # --------- 
+  appReady <- reactive({
+    # check if db connection is established and course id is valid
+    dbConnected() && 
+      !is.null(input$selectLogdataCourseID) && 
+      input$selectLogdataCourseID != "" &&
+      input$selectLogdataCourseID > "0"
+  })
   
   # ------------- 
   # configuration 
@@ -453,7 +461,8 @@ server <- function(input, output, session) {
   
   # observe loadProjConfigProxy
   observeEvent(input$loadProjConfigProxy, {
-    shinyjs::runjs("$('#loadProjConfig')[0].click();") # DOWNLOAD BUTTON
+    #shinyjs::runjs("$('#loadProjConfig')[0].click();") # DOWNLOAD BUTTON
+    shinyjs::click("loadProjConfig")
   })
   
   
@@ -600,7 +609,7 @@ server <- function(input, output, session) {
 
     if(class(dbpMdl)[1] == "Pool") {
       showNotification("DB connection established.", type = "message")
-      #bslib::sidebar_toggle(id = "sidebar", open = FALSE)
+      dbConnected(TRUE) # change state of reactiveVal
       bslib::toggle_sidebar(id = "sidebar", open = FALSE)
       # now populate selectList with courses
       tryCatch({
@@ -718,8 +727,9 @@ server <- function(input, output, session) {
     # resolve objectids
     logdata <- mdl_resolve_objectids(dbpMdl, config$dbprefix, logdata)
     
-    logdata <- logdata |> dplyr::select(id, hashuser, relatedhashuser, courseid:objectid, objectname, crud, edulevel)
-    
+    #logdata <- logdata |> dplyr::select(id, hashuser, relatedhashuser, courseid:objectid, objectname, crud, edulevel)
+    # remove userid and relateduserid; move id, hashuser, ... to the beginning; independent of whether all columns are included or not
+    logdata <- logdata |> dplyr::select(-userid, -relateduserid) |> dplyr::relocate(id, hashuser, relatedhashuser, courseid)
     # additional data processing
     shinyjs::runjs("$('#btnGetLogdata').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Processing data...');")
     wrangling <- input$selectLogdataWrangling
@@ -732,7 +742,8 @@ server <- function(input, output, session) {
     # set variable for data export
     shinyjs::runjs("$('#btnGetLogdata').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(logdata)
-    shinyjs::runjs("$('#downloadLogdata')[0].click();") # DOWNLOAD BUTTON
+    #shinyjs::runjs("$('#downloadLogdata')[0].click();") # DOWNLOAD BUTTON
+    shinyjs::click("downloadLogdata")
     shinyjs::runjs("$('#btnGetLogdata').text('Process Moodle Logdata');")
     # reset btnLoadWranglingCode
     shinyjs::reset("btnLoadWranglingCode")
@@ -774,15 +785,34 @@ server <- function(input, output, session) {
     }
   })
   
-  # observe changes in selectCourse
-  observeEvent(input$selectLogdataCourse, {
-    req(input$selectLogdataCourse)
+  # observePresidio input$chkboxPOSMFD
+  observeEvent(input$chkboxPOSMFD, {
+    if (input$chkboxPOSMFD) {
+      # presidio selected
+      shinyjs::enable("presidioAnalyzer")
+      shinyjs::enable("presidioAnonymizer")
+      shinyjs::enable("presidioLang")
+    } else {
+      # presidio not selected
+      shinyjs::disable("presidioAnalyzer")
+      shinyjs::disable("presidioAnonymizer")
+      shinyjs::disable("presidioLang")
+    }
+  })
+  
+  # observe changes in selectCourseID
+  #observeEvent(input$selectLogdataCourse, {
+  observeEvent(input$selectLogdataCourseID, {
+    #req(selectLogdataCourseID)
+    if (!appReady()) {
+      req(FALSE)  # Dies wird den Code stoppen
+    }
     # get all forums from course
-    cid <- as.integer(input$selectLogdataCourse)
+    cid <- as.integer(input$selectLogdataCourseID)
     tryCatch({
       forums <- mdl_forumlist(dbpMdl, config$dbprefix, cid)
     },error = function(e) {
-      showNotification('Could not retrieve forum liar.','',type = "error")
+      showNotification('Could not retrieve forum list.','',type = "error")
       return()
     })
     # update selectForumsMFD
@@ -876,7 +906,8 @@ server <- function(input, output, session) {
     forumdata <- forumdata |> dplyr::select(id, hashuser, discussion, parent_id, created:forumname)
     shinyjs::runjs("$('#btnGetMFD').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(forumdata)
-    shinyjs::runjs("$('#downloadMFD')[0].click();") # DOWNLOAD BUTTON
+    #shinyjs::runjs("$('#downloadMFD')[0].click();") # DOWNLOAD BUTTON
+    shinyjs::click("downloadMFD")
     shinyjs::runjs("$('#btnGetMFD').text('Get Moodle forum messages');")
     #shinyjs::disable("btnGetMFD")
   })
@@ -937,7 +968,8 @@ server <- function(input, output, session) {
       userlist$hashgroup <- pseudonymize(userlist$groupname, config$pepper)
       userlist <- userlist |> dplyr::select(hashuser, hashgroup, grouping)
       exportData(userlist)
-      shinyjs::runjs("$('#downloadData')[0].click();") # DOWNLOAD BUTTON
+      #shinyjs::runjs("$('#downloadData')[0].click();") # DOWNLOAD BUTTON
+      shinyjs::click("downloadData")
     }
   )
   # end btnGetUserList
@@ -1209,7 +1241,8 @@ server <- function(input, output, session) {
     # set variable for data export
     shinyjs::runjs("$('#btnSurveyMatching').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(shuffle(shuffle(dta_out)))
-    shinyjs::runjs("$('#downloadMatchdata')[0].click();") # DOWNLOAD BUTTON
+    #shinyjs::runjs("$('#downloadMatchdata')[0].click();") # DOWNLOAD BUTTON
+    shinyjs::click("downloadMatchdata")
     resetMatchPseudGUI()
   })
   
@@ -1329,7 +1362,8 @@ server <- function(input, output, session) {
     # set variable for data export
     shinyjs::runjs("$('#btnPseudData').html('<i class=\"fa-solid fa-sync fa-spin\"></i> Preparing download...');")
     exportData(shuffle(shuffle(dta)))
-    shinyjs::runjs("$('#downloadPseuddata')[0].click();") # DOWNLOAD BUTTON
+    #shinyjs::runjs("$('#downloadPseuddata')[0].click();") # DOWNLOAD BUTTON
+    shinyjs::click("downloadPseuddata")
     shinyjs::runjs("$('#btnPseudData').text('Pseudonymise data');")
     importData <- NULL
     shinyjs::disable("btnPseudData")
