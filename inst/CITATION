@@ -1,7 +1,7 @@
 bibentry(
   bibtype  = "Manual",
   title    = "moodleLA: Access to pseudonymised Moodle data for learning research",
-  author   = "Björn Fisseler
+  author   = "Björn Fisseler",
   organization = "FernUniversität in Hagen",
   address = "Hagen, Germany",
   year     = "2025",

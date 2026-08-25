@@ -54,6 +54,6 @@ Imports:
     httr2
 Roxygen: list(markdown = TRUE)
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
