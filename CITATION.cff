@@ -18,18 +18,6 @@ authors:
   given-names: Björn
   email: bjoern.fisseler@gmail.com
   orcid: https://orcid.org/0000-0002-8178-7479
-preferred-citation:
-  type: manual
-  title: 'moodleLA: Access to pseudonymised Moodle data for learning research'
-  authors:
-  - family-names: Björn
-    given-names: Fisseler
-  institution:
-    name: FernUniversität in Hagen
-    address: Hagen, Germany
-  year: '2025'
-  url: https://github.com/bfisseler/moodleLA
-  notes: R package version 0.1
 repository-code: https://github.com/bfisseler/moodleLA
 url: https://github.com/bfisseler/moodleLA/
 contact:
