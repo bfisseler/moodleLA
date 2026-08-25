@@ -73,7 +73,7 @@ mdl_forumdata_query <- function(prefix, courseid, forumids) {
         LEFT JOIN forums ON d.forum = forums.id 
         WHERE
             course = {courseid} AND
-            userid IN (SELECT userid FROM userlist) AND
+            -- userid IN (SELECT userid FROM userlist) AND
             forum IN ({forumids})
     ),
     forumposts AS(

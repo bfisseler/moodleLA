@@ -1,7 +1,7 @@
 Package: moodleLA
 Type: Package
 Title: Helper functions to facilitate learning analytics with Moodle data
-Version: 0.0.0.9000
+Version: 0.0.0.9002
 Authors@R: 
     c(
     person(given = "Björn",
@@ -52,8 +52,8 @@ Imports:
     openxlsx2,
     quanteda,
     httr2
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 3.5)
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

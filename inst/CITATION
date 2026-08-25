@@ -1,8 +1,10 @@
 bibentry(
   bibtype  = "Manual",
-  title    = "moodleLA",
+  title    = "moodleLA: Access to pseudonymised Moodle data for learning research",
   author   = person("Fisseler", "Björn"),
+  organization = "FernUniversität in Hagen",
+  address = "Hagen, Germany",
   year     = "2025",
-  url      = "",
+  url      = "https://github.com/bfisseler/moodleLA",
   note     = "R package version 0.1"
 )
